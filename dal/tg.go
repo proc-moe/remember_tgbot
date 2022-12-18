@@ -1,10 +1,9 @@
 package dal
 
 import (
-	"os"
-
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
-	"github.com/proc-moe/remember_tgbot/utils/logs"
+	"github.com/proc-moe/remember_tgbot/conf"
+	klog "github.com/proc-moe/remember_tgbot/utils/klog"
 )
 
 type TGProxy struct {
@@ -12,30 +11,35 @@ type TGProxy struct {
 }
 
 func InitTGProxy() *TGProxy {
+	klog.I("[InitTGProxy] start...")
 	p := &TGProxy{}
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_APITOKEN"))
-	bot.Debug = true
-	logs.I("Authorized on account %s", bot.Self.UserName)
+	bot, err := tgbotapi.NewBotAPI(conf.Conf.Telegram.Api_token)
 	if err != nil {
 		panic(err)
 	}
+	klog.I("Authorized on account:%s", bot.Self.UserName)
+	bot.Debug = true
 	p.bot = bot
-	logs.I("telegram bot inited")
+	klog.I("telegram bot inited")
 	return p
 }
 
-func (p *TGProxy) Message() {
+func (p *TGProxy) Listen() {
 	go func() {
-		logs.I("[tgbot] start listening")
+		klog.I("[tgbot] start listening")
 		u := tgbotapi.NewUpdate(0)
 		u.Timeout = 60
 		updates := p.bot.GetUpdatesChan(u)
 
 		for update := range updates {
-			logs.I("[%s] %s", update.Message.From.UserName, update.Message.Text)
+			klog.I("[%s]:%s", update.Message.From.UserName, update.Message.Text)
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
 			msg.ReplyToMessageID = update.Message.MessageID
 			p.bot.Send(msg)
 		}
 	}()
+}
+
+func (p *TGProxy) Send() {
+
 }

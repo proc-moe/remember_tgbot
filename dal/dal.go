@@ -1,13 +1,13 @@
 package dal
 
 type Client struct {
-	tg *TGProxy
+	Tg *TGProxy
 }
 
 var Cli *Client
 
-func InitDal() {
+func Init() {
 	Cli = &Client{
-		tg: InitTGProxy(),
+		Tg: InitTGProxy(),
 	}
 }
